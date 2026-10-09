@@ -1,0 +1,5 @@
+do_add:
+    and   t2, t0, t1      
+    xor   t0, t0, t1     
+    slli  t1, t2, 1        
+    bnez  t1, do_add 
