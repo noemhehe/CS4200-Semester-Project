@@ -1,10 +1,44 @@
+// initialize test data
+add a1, a0, x0 // start of the matrix
+li t0, 0
+sw t0, 0(a0)
+addi a0, a0, 4
+li t0, 1
+sw t0, 0(a0)
+addi a0, a0, 4
+li t0, 2
+sw t0, 0(a0)
+addi a0, a0, 4
+li t0, 1
+sw t0, 0(a0)
+addi a0, a0, 4
+li t0, 2
+sw t0, 0(a0)
+addi a0, a0, 4
+li t0, 3
+sw t0, 0(a0)
+addi a0, a0, 4
+add a0, a1, x0 // return to start of the matrix
+addi a1, x0, 2
+addi a2, x0, 3
+j sum_columns
+
+// receive values to sum in a0 and a1
+do_add:
+    and   t2, a0, a1      
+    xor   a0, a0, a1     
+    slli  a1, t2, 1        
+    bnez  a1, do_add 
+    ret
+
 sum_columns:
     // receive matrix pointer in a0, nrows in a1, ncols in a2
     // use save registers
-    addi sp, sp, -12
-    sw s0, 8(sp)
-    sw s1, 4(sp)
-    sw s2, 0(sp)
+    addi sp, sp, -16
+    sw s0, 12(sp)
+    sw s1, 8(sp)
+    sw s2, 4(sp)
+    sw ra, 0(sp)
     
     mv s0, a0
     mv s1, a1
@@ -19,19 +53,19 @@ sum_columns:
     // begin loop - row counter
     addi t0, x0, 0 // k = 0
     for_row:
-        beq s1, t0, add_total
-        lw a0, 0(s0)
-        mv a1, a3
-        j do_add
-        mv a3, a0
+    beq s1, t0, add_total
+    lw a0, 0(s0)
+    mv a1, a3
+    j do_add
+    mv a3, a0
         
-        // increase matrix pointer by the number of columns; matrix will point at the next column entry
-        mv a0, s0
-        mv a1, s2
-        j do_add
-        mv s0, a0
-        addi t0, t0, 1
-        j for_row
+    // increase matrix pointer by the number of columns; matrix will point at the next column entry
+    mv a0, s0
+    mv a1, s2
+    j do_add
+    mv s0, a0
+    addi t0, t0, 1
+    j for_row
         
     // save the column's sum to a sum array at a4
     add_total:
@@ -45,17 +79,13 @@ sum_columns:
     
     end:
     // reset save registers
-    lw s0, 8(ap)
-    lw s1, 4(sp)
-    lw s2, 0(sp)
-    addi sp, sp, 12
+    lw s0, 12(ap)
+    lw s1, 8(sp)
+    lw s2, 4(sp)
+    lw ra, 0(sp)
+    addi sp, sp, 16
     // write -1 to the end of the sum array to signal the end
     addi t0, t0, -1
     sw t0, 0(a4)
     mv a0, a4
-
-do_add:
-    and   t2, t0, t1      
-    xor   t0, t0, t1     
-    slli  t1, t2, 1        
-    bnez  t1, do_add 
+    ret
