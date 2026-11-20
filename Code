@@ -1,7 +1,3 @@
-.data
-matrix: .word 0, 0, 0, 0, 0, 0
-sum:    .word 0, 0, 0
-
 .text
 la a0, matrix
 
@@ -124,3 +120,7 @@ sum_columns:
     lw ra, 12(sp)
     addi sp, sp, 32
     ret
+
+.data
+matrix: .word 0, 0, 0, 0, 0, 0
+sum:    .word 0, 0, 0
