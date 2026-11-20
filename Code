@@ -61,13 +61,13 @@ sum_columns:
     beq s1, t0, add_total
     lw a0, 0(s0)
     mv a1, a3
-    j do_add
+    jal ra, do_add
     mv a3, a0
         
     // increase matrix pointer by the number of columns; matrix will point at the next column entry
     mv a0, s0
     mv a1, s2
-    j do_add
+    jal ra, do_add
     mv s0, a0
     addi t0, t0, 1
     j for_row
