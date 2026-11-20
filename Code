@@ -1,7 +1,9 @@
 .data
+matrix: .space 24       // 2 rows x 3 columns = 6 integers
 sum: .space 128   // space for up to 32 unsigned integers, for all testing
 
 .text
+la a0, matrix
 
 // initialize test data
 add a1, a0, x0 // start of the matrix
