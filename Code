@@ -59,13 +59,13 @@ sum_columns:
     slli s3, s2, 2 // row stride = number of columns * 4
     
     // begin loop - column counter
-    addi t1, x0, 0 // i = 0
+    xor t1, t1, t1 // i = 0
     mv a5, s0 // original matrix pointer for reference
     for_column:
     beq s2, t1, end
-    addi a3, x0, 0 // sum register
+    xor a3, a3, a3 // sum register
     // begin loop - row counter
-    addi t0, x0, 0 // k = 0
+    xor t0, t0, t0 // k = 0
     for_row:
     beq s1, t0, add_total
     lw a0, 0(s0)
@@ -78,16 +78,28 @@ sum_columns:
     mv a1, s3
     jal ra, do_add
     mv s0, a0
-    addi t0, t0, 1
+    mv a0, t0         // increment t0 by 1
+    mv a1, t4         // increment t0 by 1
+    jal ra, do_add    // increment t0 by 1
+    mv t0, a0         // increment t0 by 1
     j for_row
         
     // save the column's sum to a sum array at a4
     add_total:
     sw a3, 0(a4)
-    addi a4, a4, 4
-    addi t1, t1, 1
+    mv a0, a4         // increment a4 by 4
+    mv a1, t4           // increment a4 by 4
+    jal ra, do_add     // increment a4 by 4
+    mv a4, a0          // increment a4 by 4
+    mv a0, t1          // increment t1 by 1
+    mv a1, t4         // increment t1 by 1
+    jal ra, do_add    // increment t1 by 1
+    mv t1, a0        // increment t1 by 1
     // get to the beginning of the next column
-    addi a5, a5, 4
+    mv a0, a5         // increment a5 by 4
+    mv a1, t4           // increment a5 by 4
+    jal ra, do_add     // increment a5 by 4
+    mv a5, a0          // increment a5 by 4
     mv s0, a5
     j for_column
     
