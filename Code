@@ -56,6 +56,7 @@ sum_columns:
     mv s0, a0
     mv s1, a1
     mv s2, a2
+    mv s4, a4    // preserve original output array address
     slli s3, s2, 2 // row stride = number of columns * 4
     xori t4, x0, 1       // t4 = 1
     slli t5, t4, 2       // t5 = 4
@@ -90,7 +91,7 @@ sum_columns:
     add_total:
     sw a3, 0(a4)
     mv a0, a4         // increment a4 by 4
-    mv a1, t4           // increment a4 by 4
+    mv a1, t5           // increment a4 by 4
     jal ra, do_add     // increment a4 by 4
     mv a4, a0          // increment a4 by 4
     mv a0, t1          // increment t1 by 1
@@ -99,7 +100,7 @@ sum_columns:
     mv t1, a0        // increment t1 by 1
     // get to the beginning of the next column
     mv a0, a5         // increment a5 by 4
-    mv a1, t4           // increment a5 by 4
+    mv a1, t5           // increment a5 by 4
     jal ra, do_add     // increment a5 by 4
     mv a5, a0          // increment a5 by 4
     mv s0, a5
