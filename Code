@@ -1,3 +1,8 @@
+.data
+sum: .space 128   // space for up to 32 unsigned integers, for all testing
+
+.text
+
 // initialize test data
 add a1, a0, x0 // start of the matrix
 li t0, 0
