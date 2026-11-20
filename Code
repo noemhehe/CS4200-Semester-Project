@@ -31,6 +31,9 @@ addi a2, x0, 3
 la a4, sum     // initialize output array pointer
 jal ra, sum_columns
 
+done:
+    j done
+
 do_add:
     li    a2, 0          // overflow flag = 0
 
