@@ -26,6 +26,7 @@ addi a0, a0, 4
 add a0, a1, x0 // return to start of the matrix
 addi a1, x0, 2
 addi a2, x0, 3
+la a4, sum     // initialize output array pointer
 j sum_columns
 
 do_add:
