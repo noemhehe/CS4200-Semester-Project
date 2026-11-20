@@ -98,8 +98,5 @@ sum_columns:
     lw s3, 16(sp)
     lw ra, 12(sp)
     addi sp, sp, 32
-    // write -1 to the end of the sum array to signal the end
-    addi t0, t0, -1
-    sw t0, 0(a4)
     mv a0, a4
     ret
