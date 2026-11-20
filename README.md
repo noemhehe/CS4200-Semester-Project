@@ -1,1 +1,2 @@
 for simple test case, answers are stored in 0x000003b4, 0x000003b8, and 0x000003bc. It should be equal to 1, 3, and 5 respectively. 
+for 32 x 32 test case, answers are stored in 0x1424, 0x1428, so on. It should be 0x20, 0x40, 0x60 and so on respectively.
