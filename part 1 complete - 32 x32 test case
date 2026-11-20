@@ -52,6 +52,7 @@ init_column:
     la a4, sum
 
     jal ra, sum_columns
+    la t0, sum
 
 done:
     j done
@@ -81,13 +82,25 @@ do_add_loop:
 // a4 = output array pointer
 sum_columns:
 
-    // Allocate stack space using do_add
+    // Preserve function arguments
     mv t0, ra
+    mv t1, a0
+    mv t4, a1
+    mv t5, a2
+    mv t6, a4
+
+    // Allocate stack space
     mv a0, sp
     li a1, -32
     jal ra, do_add
     mv sp, a0
     mv ra, t0
+
+    // Restore function arguments
+    mv a0, t1
+    mv a1, t4
+    mv a2, t5
+    mv a4, t6
 
     // Save registers
     sw s0, 28(sp)
@@ -143,7 +156,7 @@ for_row:
 
     j for_row
 
-add_total:
+    add_total:
     // Store column sum
     sw a3, 0(a4)
 
