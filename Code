@@ -1,6 +1,6 @@
 .data
-matrix: .space 24       // 2 rows x 3 columns = 6 integers
-sum: .space 128   // space for up to 32 unsigned integers, for all testing
+matrix: .word 0, 0, 0, 0, 0, 0
+sum:    .word 0, 0, 0
 
 .text
 la a0, matrix
