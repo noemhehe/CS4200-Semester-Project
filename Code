@@ -51,6 +51,7 @@ sum_columns:
     sw s2, 20(sp)
     sw s3, 16(sp)
     sw ra, 12(sp)
+    sw s4, 8(sp)
     
     mv s0, a0
     mv s1, a1
@@ -92,11 +93,12 @@ sum_columns:
     
     end:
     // reset save registers
-   lw s0, 28(sp)
+    lw s0, 28(sp)
     lw s1, 24(sp)
     lw s2, 20(sp)
     lw s3, 16(sp)
     lw ra, 12(sp)
+    lw s4, 8(sp)
     addi sp, sp, 32
-    mv a0, a4
+    mv a0, s4
     ret
