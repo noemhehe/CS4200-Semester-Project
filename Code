@@ -27,7 +27,7 @@ add a0, a1, x0 // return to start of the matrix
 addi a1, x0, 2
 addi a2, x0, 3
 la a4, sum     // initialize output array pointer
-j sum_columns
+jal ra, sum_columns
 
 do_add:
     li    a2, 0          // overflow flag = 0
