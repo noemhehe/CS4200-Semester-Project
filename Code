@@ -39,15 +39,17 @@ do_add_loop:
 sum_columns:
     // receive matrix pointer in a0, nrows in a1, ncols in a2
     // use save registers
-    addi sp, sp, -16
-    sw s0, 12(sp)
-    sw s1, 8(sp)
-    sw s2, 4(sp)
-    sw ra, 0(sp)
+    addi sp, sp, -32
+    sw s0, 28(sp)
+    sw s1, 24(sp)
+    sw s2, 20(sp)
+    sw s3, 16(sp)
+    sw ra, 12(sp)
     
     mv s0, a0
     mv s1, a1
     mv s2, a2
+    slli s3, s2, 2 // row stride = number of columns * 4
     
     // begin loop - column counter
     addi t1, x0, 0 // i = 0
@@ -66,7 +68,7 @@ sum_columns:
         
     // increase matrix pointer by the number of columns; matrix will point at the next column entry
     mv a0, s0
-    mv a1, s2
+    mv a1, s3
     jal ra, do_add
     mv s0, a0
     addi t0, t0, 1
@@ -84,11 +86,12 @@ sum_columns:
     
     end:
     // reset save registers
-    lw s0, 12(ap)
-    lw s1, 8(sp)
-    lw s2, 4(sp)
-    lw ra, 0(sp)
-    addi sp, sp, 16
+   lw s0, 28(sp)
+    lw s1, 24(sp)
+    lw s2, 20(sp)
+    lw s3, 16(sp)
+    lw ra, 12(sp)
+    addi sp, sp, 32
     // write -1 to the end of the sum array to signal the end
     addi t0, t0, -1
     sw t0, 0(a4)
