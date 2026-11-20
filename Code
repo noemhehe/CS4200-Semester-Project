@@ -92,13 +92,12 @@ sum_columns:
     j for_column
     
     end:
-    // reset save registers
+    mv a0, s4          // return original output array address
+    lw s4, 8(sp)       // restore caller's s4
     lw s0, 28(sp)
     lw s1, 24(sp)
     lw s2, 20(sp)
     lw s3, 16(sp)
     lw ra, 12(sp)
-    lw s4, 8(sp)
     addi sp, sp, 32
-    mv a0, s4
     ret
