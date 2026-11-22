@@ -1,1 +1,218 @@
 
+.text
+.globl main
+
+main:
+    // Initialize 32 x 32 matrix
+    la t4, matrix
+
+    li t0, 0          // row counter
+    li a3, 32        // matrix dimension
+    li t5, 1          // increment value
+
+init_row:
+    li t1, 0          // column counter
+    li t6, 1         // value starts at 1
+
+init_column:
+    sw t6, 0(t4)
+
+    // Move matrix pointer forward by 4 bytes
+    mv a0, t4
+    li a1, 4
+    jal ra, do_add
+    mv t4, a0
+
+    // Increase value by 1
+    mv a0, t6
+    mv a1, t5
+    jal ra, do_add
+    mv t6, a0
+
+    // Increase column counter by 1
+    mv a0, t1
+    mv a1, t5
+    jal ra, do_add
+    mv t1, a0
+
+    blt t1, a3, init_column
+
+    // Increase row counter by 1
+    mv a0, t0
+    mv a1, t5
+    jal ra, do_add
+    mv t0, a0
+
+    blt t0, a3, init_row
+
+    // Set up function arguments
+    la a0, matrix
+    li a1, 32
+    li a2, 32
+    la a4, sum
+
+    jal ra, sum_columns
+    la t0, sum
+    
+done:
+    j done
+
+
+
+// a0 = first integer
+// a1 = second integer
+// a0 = result
+// a2 = overflow flaf
+do_add:
+    li a2, 0
+
+do_add_loop:
+    and t2, a0, a1
+    srli t3, t2, 31
+    or a2, a2, t3
+    xor a0, a0, a1
+    slli a1, t2, 1
+    bnez a1, do_add_loop
+
+    ret
+
+
+// a0 = matrix pointer
+// a1 = number of rows
+// a2 = number of columns
+// a4 = output array pointer
+sum_columns:
+
+    // Save registers
+    addi sp, sp, -32
+    sw s0, 0(sp)
+    sw s1, 4(sp)
+    sw s2, 8(sp)
+    sw s3, 12(sp)
+    sw s4, 16(sp)
+    sw ra, 20(sp)
+
+    // Save function arguments
+    mv s0, a0          // matrix pointer
+    mv s1, a1          // number of rows
+    mv s2, a2          // number of columns
+    mv s4, a4          // output array pointer
+
+    // Calculate row size in bytes
+    slli s3, s2, 2
+
+    // Initialize output array to zero
+    xor t0, t0, t0
+    mv t5, s4
+
+init_sum:
+    beq t0, s2, init_done
+
+    sw x0, 0(t5)
+
+    // Move output pointer forward by 4
+    mv a0, t5
+    li a1, 4
+    jal ra, do_add
+    mv t5, a0
+
+    // Increment column counter
+    mv a0, t0
+    li a1, 1
+    jal ra, do_add
+    mv t0, a0
+
+    j init_sum
+
+init_done:
+
+    // Overall overflow flag
+    xor t6, t6, t6
+
+    // Row counter
+    xor t0, t0, t0
+
+for_row:
+    beq t0, s1, end
+
+    // Start at beginning of current row
+    mv t4, s0
+
+    // Start at beginning of output array
+    mv t5, s4
+
+    // Column counter
+    xor t1, t1, t1
+
+for_column:
+    beq t1, s2, next_row
+
+    // Add matrix[row][column] to sum[column]
+    lw a0, 0(t4)
+    lw a1, 0(t5)
+    jal ra, do_add
+
+    // Check for overflow
+    or t6, t6, a2
+
+    // Store updated column sum
+    sw a0, 0(t5)
+
+    // Move to next matrix element
+    mv a0, t4
+    li a1, 4
+    jal ra, do_add
+    mv t4, a0
+
+    // Move to next output element
+    mv a0, t5
+    li a1, 4
+    jal ra, do_add
+    mv t5, a0
+
+    // Increment column counter
+    mv a0, t1
+    li a1, 1
+    jal ra, do_add
+    mv t1, a0
+
+    j for_column
+
+next_row:
+
+    // Move to beginning of next row
+    mv a0, s0
+    mv a1, s3
+    jal ra, do_add
+    mv s0, a0
+
+    // Increment row counter
+    mv a0, t0
+    li a1, 1
+    jal ra, do_add
+    mv t0, a0
+
+    j for_row
+
+end:
+
+    // Return output pointer and overflow flag
+    mv a0, s4
+    mv a2, t6
+
+    // Restore saved registers
+    lw s0, 0(sp)
+    lw s1, 4(sp)
+    lw s2, 8(sp)
+    lw s3, 12(sp)
+    lw s4, 16(sp)
+    lw ra, 20(sp)
+
+    addi sp, sp, 32
+
+    ret
+
+.data
+
+matrix: .space 4096
+sum:    .space 128
