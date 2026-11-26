@@ -80,134 +80,120 @@ do_add_loop:
 // a1 = number of rows
 // a2 = number of columns
 // a4 = output array pointer
+
 sum_columns:
 
-    // Preserve function arguments
-    mv t0, ra
-    mv t1, a0
-    mv t4, a1
-    mv t5, a2
-    mv t6, a4
-
-    // Allocate stack space
-    mv a0, sp
-    li a1, -32
-    jal ra, do_add
-    mv sp, a0
-    mv ra, t0
-
-    // Restore function arguments
-    mv a0, t1
-    mv a1, t4
-    mv a2, t5
-    mv a4, t6
-
     // Save registers
-    sw s0, 28(sp)
-    sw s1, 24(sp)
-    sw s2, 20(sp)
-    sw s3, 16(sp)
-    sw ra, 12(sp)
-    sw s4, 8(sp)
+    addi sp, sp, -32
+    sw s0, 0(sp)
+    sw s1, 4(sp)
+    sw s2, 8(sp)
+    sw s3, 12(sp)
+    sw s4, 16(sp)
+    sw ra, 20(sp)
 
-    mv s0, a0
-    mv s1, a1
-    mv s2, a2
-    mv s4, a4
+    // Save function arguments
+    mv s0, a0          // matrix pointer
+    mv s1, a1          // number of rows
+    mv s2, a2          // number of columns
+    mv s4, a4          // output array pointer
 
-    slli s3, s2, 2       // row stride
+    // Calculate row size in bytes
+    slli s3, s2, 2
 
-    xori t4, x0, 1       // t4 = 1
-    slli t5, t4, 2       // t5 = 4
-    xor t6, t6, t6       // overall overflow flag = 0
+    // Initialize overflow flag
+    xor a3, a3, a3
+
+    // Start at first column of matrix
+    mv t6, s0
+
+    // Start at first output element
+    mv t5, s4
 
     // Column counter
-    xor t1, t1, t1
-    mv a5, s0
-
-for_column:
-    beq s2, t1, end
-
-    xor a3, a3, a3       // column sum = 0
-
-    // Row counter
     xor t0, t0, t0
 
+for_column:
+
+    beq t0, s2, end
+
+    // Start at current column
+    mv t4, t6
+
+    // Initialize current column sum to zero
+    sw x0, 0(t5)
+
+    // Row counter
+    xor t1, t1, t1
+
 for_row:
-    beq s1, t0, add_total
 
-    lw a0, 0(s0)
-    mv a1, a3
+    beq t1, s1, next_column
+
+    // Add matrix[row][column] to sum[column]
+    lw a0, 0(t4)
+    lw a1, 0(t5)
     jal ra, do_add
-    or t6, t6, a2
-    mv a3, a0
 
-    // Move to next row's entry in this column
-    mv a0, s0
+    // Check for overflow
+    or a3, a3, a2
+
+    // Store updated column sum
+    sw a0, 0(t5)
+
+    // Move to same column in next row
+    mv a0, t4
     mv a1, s3
     jal ra, do_add
-    mv s0, a0
+    mv t4, a0
 
     // Increment row counter
-    mv a0, t0
-    mv a1, t4
+    mv a0, t1
+    li a1, 1
     jal ra, do_add
-    mv t0, a0
+    mv t1, a0
 
     j for_row
 
-    add_total:
-    // Store column sum
-    sw a3, 0(a4)
+next_column:
 
-    // Increment output pointer
-    mv a0, a4
-    mv a1, t5
+    // Move to first element of next column
+    mv a0, t6
+    li a1, 4
     jal ra, do_add
-    mv a4, a0
+    mv t6, a0
+
+    // Move to next output element
+    mv a0, t5
+    li a1, 4
+    jal ra, do_add
+    mv t5, a0
 
     // Increment column counter
-    mv a0, t1
-    mv a1, t4
+    mv a0, t0
+    li a1, 1
     jal ra, do_add
-    mv t1, a0
-
-    // Move to beginning of next column
-    mv a0, a5
-    mv a1, t5
-    jal ra, do_add
-    mv a5, a0
-    mv s0, a5
+    mv t0, a0
 
     j for_column
 
 end:
-    // Preserve return values across stack adjustment
-    mv t4, s4
-    mv t1, t6
-
-    // Restore saved registers
-    lw s4, 8(sp)
-    lw s0, 28(sp)
-    lw s1, 24(sp)
-    lw s2, 20(sp)
-    lw s3, 16(sp)
-    lw ra, 12(sp)
-
-    // Deallocate stack using do_add
-    mv t0, ra
-    mv a0, sp
-    li a1, 32
-    jal ra, do_add
-    mv sp, a0
-    mv ra, t0
 
     // Return output pointer and overflow flag
-    mv a0, t4
-    mv a2, t1
+    mv a0, s4
+    mv a2, a3
+
+    // Restore saved registers
+    lw s0, 0(sp)
+    lw s1, 4(sp)
+    lw s2, 8(sp)
+    lw s3, 12(sp)
+    lw s4, 16(sp)
+    lw ra, 20(sp)
+
+    addi sp, sp, 32
 
     ret
-
 
 .data
 
