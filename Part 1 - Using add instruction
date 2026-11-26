@@ -1,0 +1,145 @@
+
+.text
+.globl main
+
+main:
+    // Initialize 32 x 32 matrix
+    la t4, matrix
+
+    li a3, 32          // Matrix dimension
+    li t0, 0           // Row counter
+
+init_row:
+    beq t0, a3, init_done
+
+    li t1, 0           // Column counter
+    li t6, 1           // Value starts at 1 for each row
+
+init_column:
+    beq t1, a3, next_row
+
+    sw t6, 0(t4)
+
+    addi t4, t4, 4
+    addi t6, t6, 1
+    addi t1, t1, 1
+
+    j init_column
+
+next_row:
+    addi t0, t0, 1
+    j init_row
+
+init_done:
+    // Call sum_columns
+    la a0, matrix
+    li a1, 32          // Number of rows
+    li a2, 32          // Number of columns
+    la a4, sum
+
+    jal ra, sum_columns
+
+done:
+    j done
+
+
+// Part 1: Column-by-column implementation
+// a0 = matrix pointer
+// a1 = number of rows
+// a2 = number of columns
+// a4 = output array pointer
+
+sum_columns:
+
+    // Save registers
+    addi sp, sp, -32
+    sw s0, 0(sp)
+    sw s1, 4(sp)
+    sw s2, 8(sp)
+    sw s3, 12(sp)
+    sw s4, 16(sp)
+    sw ra, 20(sp)
+
+    // Save function arguments
+    mv s0, a0
+    mv s1, a1
+    mv s2, a2
+    mv s4, a4
+
+    // Calculate row size in bytes
+    slli s3, s2, 2
+
+    // Start at first column of matrix
+    mv t6, s0
+
+    // Start at first output element
+    mv t5, s4
+
+    // Column counter
+    li t0, 0
+
+for_column:
+
+    beq t0, s2, end
+
+    // Start at current column
+    mv t4, t6
+
+    // Initialize current column sum to zero
+    sw x0, 0(t5)
+
+    // Row counter
+    li t1, 0
+
+for_row:
+
+    beq t1, s1, next_column
+
+    // Add matrix[row][column] to sum[column]
+    lw t2, 0(t4)
+    lw t3, 0(t5)
+    add t3, t3, t2
+    sw t3, 0(t5)
+
+    // Move to same column in next row
+    add t4, t4, s3
+
+    // Increment row counter
+    addi t1, t1, 1
+
+    j for_row
+
+next_column:
+
+    // Move to first element of next column
+    addi t6, t6, 4
+
+    // Move to next output element
+    addi t5, t5, 4
+
+    // Increment column counter
+    addi t0, t0, 1
+
+    j for_column
+
+end:
+
+    // Return output pointer
+    mv a0, s4
+
+    // Restore saved registers
+    lw s0, 0(sp)
+    lw s1, 4(sp)
+    lw s2, 8(sp)
+    lw s3, 12(sp)
+    lw s4, 16(sp)
+    lw ra, 20(sp)
+
+    addi sp, sp, 32
+
+    ret
+
+.data
+
+matrix: .space 4096
+sum:    .space 128
